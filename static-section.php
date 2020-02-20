@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Disciple Tools Extension - Admin Page
- * Plugin URI: https://github.com/DiscipleTools/disciple-tools-one-page-extension
- * Description: One page extension of Disciple Tools
+ * Plugin Name: Disciple Tools Extension - Static Section
+ * Plugin URI: https://github.com/ZumeProject/disciple-tools-static-section
+ * Description: This DT extension adds either a top tab of section to metrics and allows you to build iframe or html content into pages.
  * Version:  0.1.0
  * Author URI: https://github.com/DiscipleTools
- * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-one-page-extension
+ * GitHub Plugin URI: https://github.com/ZumeProject/disciple-tools-static-section
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
  * Tested up to: 5.3
@@ -14,14 +14,6 @@
  * @link    https://github.com/DiscipleTools
  * @license GPL-2.0 or later
  *          https://www.gnu.org/licenses/gpl-2.0.html
- */
-
-/**
- * PLEASE, RENAME CLASS AND FUNCTION NAMES BEFORE USING TEMPLATE
- * Rename these three strings:
- *      Admin Page
- *      Admin_Page
- *      admin_page
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
@@ -38,8 +30,8 @@ add_action( 'after_setup_theme', function (){
         if ( ! is_multisite() ) {
             add_action('admin_notices', function () {
                 ?>
-                <div class="notice notice-error notice-admin_page is-dismissible" data-notice="admin_page">Disciple
-                    Tools Theme not active or not latest version for Admin Page plugin.
+                <div class="notice notice-error notice-static_section is-dismissible" data-notice="static_section">
+                    Disciple Tools Theme not active or not latest version for Static Section plugin.
                 </div><?php
             });
         }
@@ -57,19 +49,19 @@ add_action( 'after_setup_theme', function (){
      */
     $is_rest = dt_is_rest();
     if ( !$is_rest || strpos( dt_get_url_path(), 'sample' ) != false ){
-        return Admin_Page::instance();
+        return Static_Section::instance();
     }
     return false;
 } );
 
 
 /**
- * Class Admin_Page
+ * Class Static_Section
  */
-class Admin_Page {
+class Static_Section {
 
-    public $token = 'admin_page';
-    public $title = 'Admin Page';
+    public $token = 'static_section';
+    public $title = 'Static Section';
     public $permissions = 'manage_dt';
 
     /**  Singleton */
@@ -148,18 +140,92 @@ class Admin_Page {
     }
 
     public function main_column() {
+        $this->process_postback();
+        ?>
+        <form method="post">
+            <?php wp_nonce_field('static-section' . get_current_user_id(), 'static-section-nonce', true, true  ) ?>
+            <!-- Title -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <th>Tab Title</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <input style="width:100%" />
+                    </td>
+                    <td style="text-align:right;"><button class="button">save</button></td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <!-- End Box -->
+
+            <!-- Menu Items -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <th>Menu</th>
+                    <th style="text-align:right;"><button class="button" onclick="add_new_section()">add</button></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="2" id="menu-box-wrapper"><!-- Menu Items --></td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+        </form>
+        <!-- End Box -->
+        <script>
+            function add_new_section() {
+                jQuery('#menu-box-wrapper').append(`
+                    <table class="widefat striped">
+                        <tbody>
+                        <tr>
+                            <td>
+                                Navigation Title<br>
+                                <input style="width:100%" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Page Content<br>
+                                <textarea style="width:100%; height:100px;"></textarea>
+                            </td>
+                        </tr>
+                        <tr style="text-align:right;">
+                            <td>
+                                <button class="button">save</button> <button class="button">delete</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                `)
+            }
+        </script>
+        <?php
+    }
+
+    public function right_column() {
         ?>
         <!-- Box -->
         <table class="widefat striped">
             <thead>
-            <tr>
-                <th>Header</th>
-            </tr>
+            <tr><th>Instructions</th></tr>
             </thead>
             <tbody>
             <tr>
                 <td>
-                    Content
+                    <ul>
+                        <li>Purpose:</li>
+                        <li>What can be done in boxes:</li>
+                    </ul>
                 </td>
             </tr>
             </tbody>
@@ -169,24 +235,11 @@ class Admin_Page {
         <?php
     }
 
-    public function right_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <tr><th>Information</th></tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
+    public function process_postback() {
+        if ( isset( $_POST ) ) {
+
+        }
+
     }
 
     /**
@@ -263,5 +316,5 @@ class Admin_Page {
 }
 
 // Register activation hook.
-register_activation_hook( __FILE__, [ 'Admin_Page', 'activation' ] );
-register_deactivation_hook( __FILE__, [ 'Admin_Page', 'deactivation' ] );
+register_activation_hook( __FILE__, [ 'Static_Section', 'activation' ] );
+register_deactivation_hook( __FILE__, [ 'Static_Section', 'deactivation' ] );
