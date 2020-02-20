@@ -335,6 +335,27 @@ class Static_Section {
         return get_post_meta($ss_post_id, 'tab_title', true );
     }
 
+    public function get_ss_nav_ids(  $ss_post_id = null ) {
+        if ( ! $ss_post_id ) {
+            $ss_post_id = $this->get_ss_post_id();
+        }
+        $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
+        $nav_meta = [];
+
+        foreach( $ss_post_meta as $key => $item ) {
+            if ( substr($key, 0, 15) === 'nav_menu_title_' ) {
+                $i = str_replace('nav_menu_title_', '', $key );
+                $nav_meta[] = $i;
+            }
+            if ( substr($key, 0, 17) === 'nav_menu_content_' ) {
+                $i = str_replace('nav_menu_content_', '', $key );
+                $nav_meta[] = true;
+            }
+        }
+
+        return array_unique( $nav_meta );
+    }
+
     public function get_ss_post_meta( $ss_post_id = null ) {
         if ( ! $ss_post_id ) {
             $ss_post_id = $this->get_ss_post_id();
@@ -480,7 +501,8 @@ class Static_Section {
                     'root' => esc_url_raw( rest_url() ),
                     'plugin_uri' => plugin_dir_url(__FILE__),
                     'nonce' => wp_create_nonce( 'wp_rest' ),
-                    'current_user_id' => get_current_user_id()
+                    'current_user_id' => get_current_user_id(),
+                    'nav_ids' => $this->get_ss_nav_ids(),
                 ]
             );
         }
@@ -506,7 +528,6 @@ class Static_Section {
             if ( ! isset($params['id'] ) ) {
                 return new WP_Error( __METHOD__, "Missing Parameters", [ 'status' => 403 ] );
             }
-
 
            return $this->get_ss_content( $params['id'] );
         }

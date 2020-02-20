@@ -1,10 +1,13 @@
 jQuery(document).ready(function() {
-    if( ! window.location.hash || '#zume_project' === window.location.hash) {
-        show_zume_project()
+    let ss_ids = dtStatic.nav_ids
+
+    if( ! window.location.hash ) {
+        let top_id = ss_ids[0]
+        load_static_section_content( top_id.replace('#', '') )
+    } else {
+        load_static_section_content( window.location.hash )
     }
-    if('#zume_locations' === window.location.hash) {
-        show_zume_locations()
-    }
+console.log(window.location.hash)
 
 })
 function load_static_section_content( id ) {
