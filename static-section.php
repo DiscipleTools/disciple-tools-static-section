@@ -48,7 +48,7 @@ add_action( 'after_setup_theme', function (){
      * Don't load the plugin on every rest request. Only those with the 'sample' namespace
      */
     $is_rest = dt_is_rest();
-    if ( !$is_rest || strpos( dt_get_url_path(), 'sample' ) != false ){
+    if ( !$is_rest || strpos( dt_get_url_path(), 'static-section' ) != false ){
         return Static_Section::instance();
     }
     return false;
@@ -60,7 +60,7 @@ add_action( 'after_setup_theme', function (){
  */
 class Static_Section {
 
-    public $token = 'static_section';
+    public $token = 'dt_static_section';
     public $title = 'Static Section';
     public $permissions = 'manage_dt';
 
@@ -78,9 +78,28 @@ class Static_Section {
      * @since   0.1.0
      */
     public function __construct() {
+        add_action( 'init', [ $this, 'register_static_section_post_type' ] );
+        add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
 
         if ( is_admin() ) {
             add_action( "admin_menu", [ $this, "register_menu" ] );
+        }
+
+        add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ], 50 );
+        if ( isset( $_SERVER["SERVER_NAME"] ) ) {
+            $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
+            if ( isset( $_SERVER["REQUEST_URI"] ) ) {
+                $url .= sanitize_text_field( wp_unslash( $_SERVER["REQUEST_URI"] ) );
+            }
+        }
+        $url_path = trim( str_replace( get_site_url(), "", $url ), '/' );
+
+        if ( 'ss' === substr( $url_path, '0', 2 ) ) {
+
+            add_filter( 'dt_templates_for_urls', [ $this, 'add_url' ] ); // add custom URL
+            add_filter( 'dt_metrics_menu', [ $this, 'menu' ], 99 );
+            add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
+
         }
     } // End __construct()
 
@@ -140,7 +159,15 @@ class Static_Section {
     }
 
     public function main_column() {
-        $this->process_postback();
+
+        $ss_post_id = $this->get_ss_post_id();
+
+        $ss_post_id = $this->process_postback( $ss_post_id );
+
+        $ss_title = $this->get_ss_tab_title( $ss_post_id );
+
+        $nav_meta = $this->get_ss_nav_fields( $ss_post_id );
+
         ?>
         <form method="post">
             <?php wp_nonce_field('static-section' . get_current_user_id(), 'static-section-nonce', true, true  ) ?>
@@ -155,52 +182,97 @@ class Static_Section {
                 <tbody>
                 <tr>
                     <td>
-                        <input style="width:100%" />
+                        <input name="tab_title" type="text" value="<?php echo ( ! empty( $ss_title ) ) ? esc_html( $ss_title ) : '' ?>" style="width:100%" />
                     </td>
-                    <td style="text-align:right;"><button class="button">save</button></td>
+                    <td style="text-align:right;">
+                        <button class="button">save</button>
+                        <?php if ( ! empty( $ss_title ) ) : ?>
+                            <button class="button" name="clear_title" value="true">clear</button>
+                        <?php endif; ?>
+                    </td>
                 </tr>
                 </tbody>
             </table>
             <br>
             <!-- End Box -->
 
+        <?php if ( ! empty( $ss_title ) ) : ?>
+
             <!-- Menu Items -->
             <table class="widefat striped">
                 <thead>
                 <tr>
                     <th>Menu</th>
-                    <th style="text-align:right;"><button class="button" onclick="add_new_section()">add</button></th>
+                    <th style="text-align:right;"><a class="button" onclick="add_new_section()">add</a></th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td colspan="2" id="menu-box-wrapper"><!-- Menu Items --></td>
+                    <td colspan="2" id="menu-box-wrapper">
+                        <!-- Menu Items Container -->
+                        <?php
+                        if ( ! empty( $nav_meta ) ) {
+                            foreach ( $nav_meta as $key => $nav ) {
+                                ?>
+                                <table class="widefat striped">
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            Navigation Title<br>
+                                            <input name="nav[<?php echo $key ?>][title]" value="<?php echo $nav['title'] ?>" style="width:100%" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Page Content<br>
+                                            <textarea name="nav[<?php echo $key ?>][content]" style="width:100%; height:100px;"><?php echo $nav['content'] ?></textarea>
+                                        </td>
+                                    </tr>
+                                    <tr style="text-align:right;">
+                                        <td>
+                                            <button class="button">save</button> <button class="button" name="delete" value="<?php echo $key ?>">delete</button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <br>
+                                <?php
+                            }
+                        }
+                        ?>
+                    </td>
                 </tr>
                 </tbody>
             </table>
             <br>
+
+            <?php endif; // tab title ?>
+
         </form>
         <!-- End Box -->
         <script>
             function add_new_section() {
+                let d = new Date();
+                let id = d.getMilliseconds() + Math.round((d).getTime() / 1000);
+
                 jQuery('#menu-box-wrapper').append(`
-                    <table class="widefat striped">
+                    <table class="widefat striped" id="${id}">
                         <tbody>
                         <tr>
                             <td>
                                 Navigation Title<br>
-                                <input style="width:100%" />
+                                <input name="new_nav[${id}][title]" style="width:100%" />
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 Page Content<br>
-                                <textarea style="width:100%; height:100px;"></textarea>
+                                <textarea name="new_nav[${id}][content]" style="width:100%; height:100px;"></textarea>
                             </td>
                         </tr>
                         <tr style="text-align:right;">
                             <td>
-                                <button class="button">save</button> <button class="button">delete</button>
+                                <button class="button">save</button> <button class="button" onclick="jQuery('#${id}').remove()">delete</button>
                             </td>
                         </tr>
                         </tbody>
@@ -209,6 +281,8 @@ class Static_Section {
                 `)
             }
         </script>
+
+
         <?php
     }
 
@@ -235,11 +309,221 @@ class Static_Section {
         <?php
     }
 
-    public function process_postback() {
-        if ( isset( $_POST ) ) {
+    public function get_ss_post_id() {
+        // gets the post_id for the static section post. This one record is the primary storage for all sections through the meta data.
+        global $wpdb;
+        $ss_post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_type = %s AND post_title = %s", $this->token, $this->token ) );
+        if ( ! $ss_post_id ) {
+            $ss_post_id = wp_insert_post([
+                'post_title' => $this->token,
+                'post_type' => $this->token,
+                'post_status' => $this->token,
+                'comment_status' => 'closed',
+                'ping_status' => 'closed',
+                'meta_input' => [
+                    'tab_title' => ''
+                ]
+            ]);
+        }
+        return $ss_post_id;
+    }
 
+    public function get_ss_tab_title( $ss_post_id = null ) {
+        if ( ! $ss_post_id ) {
+            $ss_post_id = $this->get_ss_post_id();
+        }
+        return get_post_meta($ss_post_id, 'tab_title', true );
+    }
+
+    public function get_ss_post_meta( $ss_post_id = null ) {
+        if ( ! $ss_post_id ) {
+            $ss_post_id = $this->get_ss_post_id();
         }
 
+        $ss_post_meta = array_map( function ( $a ) { return maybe_unserialize( $a[0] );
+        }, get_post_meta( $ss_post_id ) );
+
+        if ( ! isset( $ss_post_meta['tab_title'] ) ) {
+            $ss_post_meta['tab_title'] = '';
+        }
+        return $ss_post_meta;
+    }
+
+    public function get_ss_content( $ss_key ) {
+        $ss_key = sanitize_text_field( wp_unslash( $ss_key ) );
+        return get_post_meta( $this->get_ss_post_id(), 'nav_menu_content_' . $ss_key, true );
+    }
+
+    public function get_ss_nav_fields( $ss_post_id = null ) {
+        if ( $ss_post_id ) {
+            $ss_post_id = $this->get_ss_post_id();
+        }
+        $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
+        $nav_meta = [];
+
+        foreach( $ss_post_meta as $key => $item ) {
+            if ( substr($key, 0, 15) === 'nav_menu_title_' ) {
+                $i = str_replace('nav_menu_title_', '', $key );
+                $nav_meta[$i]['title'] = $item;
+            }
+            if ( substr($key, 0, 17) === 'nav_menu_content_' ) {
+                $i = str_replace('nav_menu_content_', '', $key );
+                $nav_meta[$i]['content'] = $item;
+            }
+        }
+
+        return $nav_meta;
+    }
+
+    public function process_postback( $ss_post_id ) {
+        if ( isset( $_POST['static-section-nonce'] )
+            && isset( $_POST['_wp_http_referer' ] )
+            && sanitize_text_field( wp_unslash( $_POST['_wp_http_referer' ] ) ) === '/wp-admin/admin.php?page=dt_static_section'
+            && wp_verify_nonce( sanitize_text_field( wp_unslash(  $_POST['static-section-nonce'] ) ), 'static-section' . get_current_user_id() )
+        ) {
+            if ( ! $ss_post_id ) {
+                $ss_post_id = $this->get_ss_post_id();
+            }
+            $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
+
+            $current_title = $ss_post_meta['tab_title'] ?? '';
+            $new_title = sanitize_text_field( wp_unslash( $_POST['tab_title' ] ) ) ?? '';
+            if ( $new_title !== $current_title ) {
+                update_post_meta( $ss_post_id, 'tab_title', $new_title );
+            }
+            if ( isset( $_POST['clear_title'] ) ) {
+                update_post_meta( $ss_post_id, 'tab_title', false );
+            }
+
+            if ( isset( $_POST['new_nav'] ) ) /* process menu items */ {
+                $nav = array_map( function ( $a ) {
+                    $b = [];
+                    foreach ( $a as $key => $value ) {
+                        $b[$key] = $value ; // @todo need sanitization
+                    }
+                    return $b;
+                }, $_POST['new_nav'] );
+
+
+                foreach ( $nav as $key => $item ) {
+                    if ( empty( $item['title'] ) && empty( $item['content'] ) ) {
+                        continue;
+                    }
+                    add_post_meta( $ss_post_id, 'nav_menu_title_'.$key, $item['title'], true);
+                    add_post_meta( $ss_post_id, 'nav_menu_content_'.$key, $item['content'], true );
+                }
+            }
+            if ( isset( $_POST['nav'] ) ) /* process menu items */ {
+                $nav = array_map( function ( $a ) {
+                    $b = [];
+                    foreach ( $a as $key => $value ) {
+                        $b[$key] = $value ; // @todo need sanitization
+                    }
+                    return $b;
+                }, $_POST['nav'] );
+
+                foreach ( $nav as $key => $item ) {
+                    if ( empty( $item['title'] ) && empty( $item['content'] ) ) {
+                        continue;
+                    }
+                    update_post_meta( $ss_post_id, 'nav_menu_title_'.$key, $item['title']);
+                    update_post_meta( $ss_post_id, 'nav_menu_content_'.$key, $item['content']);
+                }
+            }
+            if ( isset( $_POST['delete'] ) ) /* process menu items */ {
+                $delete_id = sanitize_text_field( wp_unslash( $_POST['delete'] ) );
+
+                delete_post_meta( $ss_post_id, 'nav_menu_title_'.$delete_id );
+                delete_post_meta( $ss_post_id, 'nav_menu_content_'.$delete_id );
+            }
+        }
+
+        return $ss_post_id;
+
+    }
+
+    public function register_static_section_post_type() {
+        $args = array(
+            'public'    => false
+        );
+        register_post_type( $this->token, $args );
+    }
+
+    public function menu( $content ) {
+        $nav_menu = $this->get_ss_nav_fields();
+        if ( ! empty( $nav_menu ) ) {
+            foreach( $nav_menu as $key => $item ) {
+                $content .= '<li><a href="'. site_url( '/ss/' ) . '#' . esc_attr( $key ) . '" onclick="load_static_section_content('. esc_attr( $key ).')">' .  esc_html( $item['title'] ) . '</a></li>';
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     * Load scripts for the plugin
+     */
+    public function scripts() {
+        $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
+
+        if ( 'ss' === substr( $url_path, '0', 2 ) ) {
+            wp_enqueue_script( 'dt_ss',
+                 plugin_dir_url(__FILE__) . 'static.js',
+                [ 'jquery' ],
+                filemtime( plugin_dir_path(__FILE__). 'static.js' ),
+                true );
+
+            wp_localize_script(
+                'dt_ss',
+                'dtStatic',
+                [
+                    'root' => esc_url_raw( rest_url() ),
+                    'plugin_uri' => plugin_dir_url(__FILE__),
+                    'nonce' => wp_create_nonce( 'wp_rest' ),
+                    'current_user_id' => get_current_user_id()
+                ]
+            );
+        }
+    }
+
+    public function add_api_routes() {
+        $namespace = 'static-section/v1';
+
+        register_rest_route(
+            $namespace, '/content', [
+                [
+                    'methods'  => WP_REST_Server::CREATABLE,
+                    'callback' => [ $this, 'content_endpoint' ],
+                ],
+            ]
+        );
+    }
+
+
+    public function content_endpoint( WP_REST_Request $request ) {
+        if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
+            $params = $request->get_json_params();
+            if ( ! isset($params['id'] ) ) {
+                return new WP_Error( __METHOD__, "Missing Parameters", [ 'status' => 403 ] );
+            }
+
+
+           return $this->get_ss_content( $params['id'] );
+        }
+
+        return new WP_Error( __METHOD__, "Missing Permissions", [ 'status' => 400 ] );
+    }
+
+    public function add_url( $template_for_url ) {
+
+        $template_for_url['ss'] = 'template-metrics.php';
+        return $template_for_url;
+    }
+
+    public function top_nav_desktop() {
+        if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
+            ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
+        }
     }
 
     /**
