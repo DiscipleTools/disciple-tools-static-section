@@ -525,16 +525,12 @@ class Static_Section {
     }
 
     public function content_endpoint( WP_REST_Request $request ) {
-        if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
-            $params = $request->get_json_params();
-            if ( ! isset($params['id'] ) ) {
-                return new WP_Error( __METHOD__, "Missing Parameters", [ 'status' => 403 ] );
-            }
-
-           return $this->get_ss_content( $params['id'] );
+        $params = $request->get_json_params();
+        if ( ! isset($params['id'] ) ) {
+            return new WP_Error( __METHOD__, "Missing Parameters", [ 'status' => 403 ] );
         }
 
-        return new WP_Error( __METHOD__, "Missing Permissions", [ 'status' => 400 ] );
+        return $this->get_ss_content( $params['id'] );
     }
 
     public function add_url( $template_for_url ) {
