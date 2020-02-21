@@ -2,13 +2,10 @@ jQuery(document).ready(function() {
     let ss_ids = dtStatic.nav_ids
 
     if( ! window.location.hash ) {
-        let top_id = ss_ids[0]
-        load_static_section_content( top_id.replace('#', '') )
+        load_static_section_content( ss_ids[0]  )
     } else {
-        load_static_section_content( window.location.hash )
+        load_static_section_content( window.location.hash.replace('#', '') )
     }
-console.log(window.location.hash)
-
 })
 function load_static_section_content( id ) {
     "use strict";
@@ -34,6 +31,4 @@ function load_static_section_content( id ) {
             console.log("error")
             console.log(err)
         })
-
-
 }

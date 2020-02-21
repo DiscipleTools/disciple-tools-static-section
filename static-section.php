@@ -86,6 +86,8 @@ class Static_Section {
         }
 
         add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ], 50 );
+        add_action( 'dt_off_canvas_nav', [ $this, 'dt_off_canvas_nav' ], 50 );
+
         if ( isset( $_SERVER["SERVER_NAME"] ) ) {
             $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
             if ( isset( $_SERVER["REQUEST_URI"] ) ) {
@@ -542,6 +544,11 @@ class Static_Section {
     }
 
     public function top_nav_desktop() {
+        if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
+            ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
+        }
+    }
+    public function dt_off_canvas_nav() {
         if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
             ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
         }
