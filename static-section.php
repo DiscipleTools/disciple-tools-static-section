@@ -544,15 +544,11 @@ class Static_Section {
     }
 
     public function top_nav_desktop() {
-        if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
-            ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
-        }
+        ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
     }
 
     public function dt_off_canvas_nav() {
-        if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
-            ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
-        }
+        ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
     }
 
     /**
