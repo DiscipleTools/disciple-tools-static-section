@@ -303,8 +303,8 @@ class Static_Section {
             <tr>
                 <td>
                     <ul>
-                        <li>Purpose:</li>
-                        <li>What can be done in boxes:</li>
+                        <li>This simple plugin allows you to add a top tab in Disciple Tools and populate the menu with pages of static content.</li>
+                        <li>You can add iframe content (including reports, forms, other websites, and resources) and static HTML content. </li>
                     </ul>
                 </td>
             </tr>
