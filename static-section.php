@@ -205,12 +205,11 @@ class Static_Section {
                 <thead>
                 <tr>
                     <th>Menu</th>
-                    <th style="text-align:right;"><a class="button" onclick="add_new_section()">add</a></th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td colspan="2" id="menu-box-wrapper">
+                    <td id="menu-box-wrapper">
                         <!-- Menu Items Container -->
                         <?php
                         if ( ! empty( $nav_meta ) ) {
@@ -245,6 +244,11 @@ class Static_Section {
                     </td>
                 </tr>
                 </tbody>
+                <tfoot>
+                <tr>
+                    <th style="text-align:right;"><a class="button" onclick="add_new_section()">add</a></th>
+                </tr>
+                </tfoot>
             </table>
             <br>
 
@@ -483,9 +487,6 @@ class Static_Section {
         return $content;
     }
 
-    /**
-     * Load scripts for the plugin
-     */
     public function scripts() {
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
@@ -523,7 +524,6 @@ class Static_Section {
         );
     }
 
-
     public function content_endpoint( WP_REST_Request $request ) {
         if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
             $params = $request->get_json_params();
@@ -548,6 +548,7 @@ class Static_Section {
             ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
         }
     }
+
     public function dt_off_canvas_nav() {
         if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
             ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html_e( $this->get_ss_tab_title() ); ?></a></li><?php
@@ -561,9 +562,7 @@ class Static_Section {
      * @access public
      * @return void
      */
-    public static function activation() {
-
-    }
+    public static function activation() {}
 
     /**
      * Method that runs only when the plugin is deactivated.
@@ -572,9 +571,7 @@ class Static_Section {
      * @access public
      * @return void
      */
-    public static function deactivation() {
-
-    }
+    public static function deactivation() {}
 
     /**
      * Magic method to output a string if trying to use the object as a string.
