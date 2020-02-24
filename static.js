@@ -10,6 +10,7 @@ jQuery(document).ready(function() {
 function load_static_section_content( id ) {
     "use strict";
     let chartDiv = jQuery('#chart')
+    chartDiv.empty().append(`<img src="${dtStatic.plugin_uri}/spinner.svg" alt="" width="40px" />`)
 
     jQuery.ajax({
         type: 'POST',
