@@ -1,11 +1,9 @@
 <?php
 /**
- * Plugin Name: Disciple Tools Extension - Static Section
- * Plugin URI: https://github.com/ZumeProject/disciple-tools-static-section
+ * Plugin Name: Disciple Tools - Static Section
  * Description: This DT extension adds either a top tab of section to metrics and allows you to build iframe or html content into pages.
- * Version:  0.1.0
+ * Version:  0.1.1
  * Author URI: https://github.com/DiscipleTools
- * GitHub Plugin URI: https://github.com/ZumeProject/disciple-tools-static-section
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
  * Tested up to: 5.3
@@ -19,7 +17,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
 
 add_action( 'after_setup_theme', function (){
-    $required_dt_theme_version = '0.22.0';
+    $required_dt_theme_version = '0.28.0';
     $wp_theme = wp_get_theme();
     $version = $wp_theme->version;
     /*
@@ -63,6 +61,7 @@ class Static_Section {
     public $token = 'dt_static_section';
     public $title = 'Static Section';
     public $permissions = 'manage_dt';
+    public $github_url = 'https://github.com/ZumeProject/disciple-tools-static-section';
 
     /**  Singleton */
     private static $_instance = null;
@@ -81,8 +80,10 @@ class Static_Section {
         add_action( 'init', [ $this, 'register_static_section_post_type' ] );
         add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
 
+
         if ( is_admin() ) {
             add_action( "admin_menu", [ $this, "register_menu" ] );
+            add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4);
         }
 
         add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ], 50 );
@@ -105,6 +106,29 @@ class Static_Section {
         }
     } // End __construct()
 
+    /**
+     * Filters the array of row meta for each/specific plugin in the Plugins list table.
+     * Appends additional links below each/specific plugin on the plugins page.
+     *
+     * @access  public
+     * @param   array       $links_array            An array of the plugin's metadata
+     * @param   string      $plugin_file_name       Path to the plugin file
+     * @param   array       $plugin_data            An array of plugin data
+     * @param   string      $status                 Status of the plugin
+     * @return  array       $links_array
+     */
+    public function plugin_description_links( $links_array, $plugin_file_name, $plugin_data, $status ) {
+        if ( strpos( $plugin_file_name, basename(__FILE__) ) ) {
+            // You can still use `array_unshift()` to add links at the beginning.
+
+            $links_array[] = '<a href="'.esc_url( $this->github_url ). '">Github</a>';
+            $links_array[] = '<a href="https://disciple.tools">Disciple.Tools</a>';
+
+            // add other links here
+        }
+
+        return $links_array;
+    }
 
     /**
      * Loads the subnav page
@@ -619,3 +643,4 @@ class Static_Section {
 // Register activation hook.
 register_activation_hook( __FILE__, [ 'Static_Section', 'activation' ] );
 register_deactivation_hook( __FILE__, [ 'Static_Section', 'deactivation' ] );
+
