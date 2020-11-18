@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-static-section)
+[![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)
 
 # Disciple Tools - Static Section
 This simple extension allows you to add a new section to the metrics or top tab area, and add iframes or HTML.
