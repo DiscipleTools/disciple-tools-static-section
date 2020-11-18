@@ -91,7 +91,7 @@ class Static_Section {
                 require( get_template_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
             }
 
-            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/admin/version-control.json";
+            $hosted_json = "https://disciple.tools/wp-content/themes/disciple-tools-public-site/version-control.php?id=7b81eb727ed48055fa55c5e03aaa43f27b01bd9b1c8eb38f37a1ca541a79c1f7";
             Puc_v4_Factory::buildUpdateChecker(
                 $hosted_json,
                 __FILE__,
