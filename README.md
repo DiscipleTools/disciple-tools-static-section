@@ -1,6 +1,10 @@
-# Disciple Tools Extension - Static Section
-This simple extension allows you to add a section to the metrics or top tab area, and add iframes or HTML.
+[![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-static-section)
 
-The primary inspiration/application for this project is to take Google DataStudio reports for website activity
-and iframe them into the metrics area. But other applications come to mind as well. You could add any iframe, like a 
-Google form or any other kind of help resource or video resource series.
+# Disciple Tools - Static Section
+This simple extension allows you to add a new section to the metrics or top tab area, and add iframes or HTML.
+
+The primary inspiration/application for this project was to take Google DataStudio reports for website activity
+and iframe them into the metrics area for a team to view early funnel data from Google Analytics. From this early effort
+it became clear the same plugin could be used to display and distribute resource.
+
+
