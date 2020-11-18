@@ -80,6 +80,9 @@ class Static_Section {
         add_action( 'init', [ $this, 'register_static_section_post_type' ] );
         add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
 
+        add_action( 'dt_top_nav_desktop', [ $this, 'top_nav' ], 50 );
+        add_action( 'dt_off_canvas_nav', [ $this, 'top_nav' ], 50 );
+
         if ( is_admin() ) {
             add_action( "admin_menu", [ $this, "register_menu" ] );
             add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
@@ -97,8 +100,7 @@ class Static_Section {
 
         }
 
-        add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ], 50 );
-        add_action( 'dt_off_canvas_nav', [ $this, 'dt_off_canvas_nav' ], 50 );
+
 
         if ( isset( $_SERVER["SERVER_NAME"] ) ) {
             $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
@@ -582,12 +584,8 @@ class Static_Section {
         return $template_for_url;
     }
 
-    public function top_nav_desktop() {
-        ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html( $this->get_ss_tab_title() ); ?></a></li><?php
-    }
-
-    public function dt_off_canvas_nav() {
-        ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php esc_html( $this->get_ss_tab_title() ); ?></a></li><?php
+    public function top_nav() {
+        ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php echo esc_html( $this->get_ss_tab_title() ); ?></a></li><?php
     }
 
     /**
