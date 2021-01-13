@@ -6,7 +6,7 @@
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
- * Tested up to: 5.5
+ * Tested up to: 5.6
  *
  * @package Disciple_Tools
  * @link    https://github.com/DiscipleTools
