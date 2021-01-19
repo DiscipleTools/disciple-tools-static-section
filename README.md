@@ -48,6 +48,10 @@ system for git. For a more details on contribution see the
 
 ## Screenshots
 
+![screenshot](https://raw.githubusercontent/DiscipleTools/disciple-tools-static-section/master/documentation/snapshot-1.png)
+
+![screenshot](https://raw.githubusercontent/DiscipleTools/disciple-tools-static-section/master/documentation/snapshot-2.png)
+
 
 
 
