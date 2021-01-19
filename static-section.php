@@ -83,25 +83,25 @@ class Static_Section {
         add_action( 'dt_top_nav_desktop', [ $this, 'top_nav' ], 50 );
         add_action( 'dt_off_canvas_nav', [ $this, 'top_nav' ], 50 );
 
+        // admin area
         if ( is_admin() ) {
+
             add_action( "admin_menu", [ $this, "register_menu" ] );
             add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
-            // Check for plugin updates
+
             if ( ! class_exists( 'Puc_v4_Factory' ) ) {
                 require( get_template_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
             }
 
-            $hosted_json = "https://disciple.tools/wp-content/themes/disciple-tools-public-site/version-control.php?id=7b81eb727ed48055fa55c5e03aaa43f27b01bd9b1c8eb38f37a1ca541a79c1f7";
+            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/version-control.json";
             Puc_v4_Factory::buildUpdateChecker(
                 $hosted_json,
                 __FILE__,
                 'disciple-tools-static-section'
             );
-
         }
 
-
-
+        // ss url
         if ( isset( $_SERVER["SERVER_NAME"] ) ) {
             $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
             if ( isset( $_SERVER["REQUEST_URI"] ) ) {
@@ -109,13 +109,10 @@ class Static_Section {
             }
         }
         $url_path = trim( str_replace( get_site_url(), "", $url ), '/' );
-
         if ( 'ss' === substr( $url_path, '0', 2 ) ) {
-
             add_filter( 'dt_templates_for_urls', [ $this, 'add_url' ] ); // add custom URL
             add_filter( 'dt_metrics_menu', [ $this, 'menu' ], 99 );
             add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
-
         }
     } // End __construct()
 
@@ -132,12 +129,10 @@ class Static_Section {
      */
     public function plugin_description_links( $links_array, $plugin_file_name, $plugin_data, $status ) {
         if ( strpos( $plugin_file_name, basename( __FILE__ ) ) ) {
-            // You can still use `array_unshift()` to add links at the beginning.
 
             $links_array[] = '<a href="'.esc_url( $this->github_url ). '">Github</a>';
             $links_array[] = '<a href="https://disciple.tools">Disciple.Tools</a>';
 
-            // add other links here
         }
 
         return $links_array;
@@ -324,8 +319,6 @@ class Static_Section {
                 `)
             }
         </script>
-
-
         <?php
     }
 
@@ -509,9 +502,7 @@ class Static_Section {
                 delete_post_meta( $ss_post_id, 'nav_menu_content_'.$delete_id );
             }
         }
-
         return $ss_post_id;
-
     }
 
     public function register_static_section_post_type() {
@@ -605,10 +596,6 @@ class Static_Section {
      * @return void
      */
     public static function deactivation() {}
-
-    public function i18n() {
-        load_plugin_textdomain( 'dt_static_section', false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
-    }
 
     /**
      * Magic method to output a string if trying to use the object as a string.
