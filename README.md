@@ -1,17 +1,17 @@
 [![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)
 
-# Disciple Tools - Static Section
+# Disciple.Tools - Static Section
 
 Add a flexible section to the top navigation that you can add HTML or iFrame resources.
 
 ## Purpose
 
 The initial application for this project was to take Google DataStudio reports
-and iframe them into the metrics area for the team to view. The visualizations were from
-the advertising and online training efforts. This data was important for the team in decision making
-and for basic encouragement and prayer. Rather than building a complex integration, this simple
-plugin allows you to iframe in the reports hosted from Google Datastudio. It can also be used to
-public amost any HTML page, like a list of downloadable resources, or the home page of a key partner
+and create an iframe in the metrics area for the team to view. The visualizations were from
+the advertising and online training efforts. This data can shape decision making, provide encouragement,
+and guide prayer. Rather than building a complex integration, this simple
+plugin allows you to create an iframe of the reports hosted in Google Datastudio. It can also be used to
+make public almost any HTML page, like a list of downloadable resources, or the home page of a key partner
 website.
 
 ## Usage
@@ -19,7 +19,7 @@ website.
 #### Will Do
 
 - Add a top-level navigation item with a custom label.
-- Add list items to a left menu similar to the metrics area of Disciple Tools.
+- Add list items to a left menu similar to the metrics area of Disciple.Tools.
 - Add, for every list item, a page with HTML/ iFrame content.
 
 #### Will Not Do
@@ -28,13 +28,13 @@ website.
 
 ## Requirements
 
-- Disciple Tools Theme installed on a Wordpress Server
+- Disciple.Tools Theme installed on a Wordpress Server
 
 ## Installing
 
 Install as a standard Disciple.Tools/Wordpress plugin in the system Admin/Plugins area. Requires the user role of Administrator.
 
-The plugin is configured in the admin section of Disciple Tools. [See the wiki for a configuration guide.](https://github.com/DiscipleTools/disciple-tools-static-section/wiki)
+The plugin is configured in the admin section of Disciple.Tools. [See the wiki for a configuration guide.](https://github.com/DiscipleTools/disciple-tools-static-section/wiki)
 
 ## Contribution
 
