@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Disciple Tools - Static Section
  * Description: The Disciple Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
- * Version:  1.0
+ * Version:  1.1
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
@@ -12,12 +12,14 @@
  * @link    https://github.com/DiscipleTools
  * @license GPL-2.0 or later
  *          https://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * @version 1.1 Adapted to the new menu structure of
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
 
 add_action( 'after_setup_theme', function (){
-    $required_dt_theme_version = '0.28.0';
+    $required_dt_theme_version = '1.0.4';
     $wp_theme = wp_get_theme();
     $version = $wp_theme->version;
     /*
@@ -80,8 +82,7 @@ class Static_Section {
         add_action( 'init', [ $this, 'register_static_section_post_type' ] );
         add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
 
-        add_action( 'dt_top_nav_desktop', [ $this, 'top_nav' ], 50 );
-        add_action( 'dt_off_canvas_nav', [ $this, 'top_nav' ], 50 );
+        add_filter( 'desktop_navbar_menu_options', [ $this, 'desktop_navbar_menu_options' ], 50 );
 
         // admin area
         if ( is_admin() ) {
@@ -576,6 +577,17 @@ class Static_Section {
 
     public function top_nav() {
         ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php echo esc_html( $this->get_ss_tab_title() ); ?></a></li><?php
+    }
+
+    public function desktop_navbar_menu_options( $tabs ) {
+        $tabs['ss'] = [
+            "link" => esc_url( site_url( '/ss/' ) ),
+            "label" => esc_html( $this->get_ss_tab_title() ),
+            'icon' => '',
+            'hidden' => false,
+            'submenu' => []
+        ];
+        return $tabs;
     }
 
     /**
