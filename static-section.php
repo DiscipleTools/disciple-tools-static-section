@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Disciple Tools - Static Section
  * Description: The Disciple Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
- * Version:  1.1
+ * Version:  1.2
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
@@ -89,17 +89,6 @@ class Static_Section {
 
             add_action( "admin_menu", [ $this, "register_menu" ] );
             add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
-
-            if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-                require( get_template_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
-            }
-
-            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/version-control.json";
-            Puc_v4_Factory::buildUpdateChecker(
-                $hosted_json,
-                __FILE__,
-                'disciple-tools-static-section'
-            );
         }
 
         // ss url
@@ -663,3 +652,33 @@ class Static_Section {
 register_activation_hook( __FILE__, [ 'Static_Section', 'activation' ] );
 register_deactivation_hook( __FILE__, [ 'Static_Section', 'deactivation' ] );
 
+
+/**
+ * Check for plugin updates even when the active theme is not Disciple.Tools
+ *
+ * Below is the publicly hosted .json file that carries the version information. This file can be hosted
+ * anywhere as long as it is publicly accessible. You can download the version file listed below and use it as
+ * a template.
+ * Also, see the instructions for version updating to understand the steps involved.
+ * @see https://github.com/DiscipleTools/disciple-tools-version-control/wiki/How-to-Update-the-Starter-Plugin
+ */
+add_action( 'plugins_loaded', function (){
+    if ( is_admin() || wp_doing_cron() ){
+        if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+            // find the Disciple.Tools theme and load the plugin update checker.
+            foreach ( wp_get_themes() as $theme ){
+                if ( $theme->get( 'TextDomain' ) === "disciple_tools" && file_exists( $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' ) ){
+                    require( $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
+                }
+            }
+        }
+        if ( class_exists( 'Puc_v4_Factory' ) ){
+            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/version-control.json";
+            Puc_v4_Factory::buildUpdateChecker(
+                $hosted_json,
+                __FILE__,
+                'disciple-tools-static-section'
+            );
+        }
+    }
+});
