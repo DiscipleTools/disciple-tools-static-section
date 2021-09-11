@@ -21,6 +21,7 @@
     "low": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/images/dt-placeholder-772x250.jpg",
     "high": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/images/dt-placeholder-1544x500.jpg"
   },
+  "icon": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/documentation/static-section-icon.png",
   "sections": {
     "description": "Add a flexible section to the top navigation that you can add HTML or iFrame resources.",
     "installation": "(Required) You must have Disciple.Tools Theme installed before using this plugin. Once Disciple.Tools is installed, you can use the normal Plugin system to install the plugin.",
