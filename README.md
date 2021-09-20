@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)
 
+1[Static Section](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/documentation/static-section-banner.png)
 # Disciple.Tools - Static Section
 
 Add a flexible section to the top navigation that you can add HTML or iFrame resources.
