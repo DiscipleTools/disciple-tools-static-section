@@ -2,7 +2,7 @@
 /**
  *Plugin Name: Disciple.Tools - Static Section
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-static-section
- * Description: The Disciple Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
+ * Description: The Disciple.Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
  * Version:  1.2
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
@@ -32,7 +32,7 @@ add_action( 'after_setup_theme', function (){
             add_action('admin_notices', function () {
                 ?>
                 <div class="notice notice-error notice-static_section is-dismissible" data-notice="static_section">
-                    Disciple Tools Theme not active or not latest version for Static Section plugin.
+                    Disciple.Tools Theme not active or not latest version for Static Section plugin.
                 </div><?php
             });
         }
@@ -138,7 +138,7 @@ class Static_Section {
     }
 
     /**
-     * Menu stub. Replaced when Disciple Tools Theme fully loads.
+     * Menu stub. Replaced when Disciple.Tools Theme fully loads.
      */
     public function extensions_menu() {}
 
@@ -148,7 +148,7 @@ class Static_Section {
      */
     public function content() {
 
-        if ( !current_user_can( $this->permissions ) ) { // manage dt is a permission that is specific to Disciple Tools and allows admins, strategists and dispatchers into the wp-admin
+        if ( !current_user_can( $this->permissions ) ) { // manage dt is a permission that is specific to Disciple.Tools and allows admins, strategists and dispatchers into the wp-admin
             wp_die( 'You do not have sufficient permissions to access this page.' );
         }
 
@@ -323,7 +323,7 @@ class Static_Section {
             <tr>
                 <td>
                     <ul>
-                        <li>This simple plugin allows you to add a top tab in Disciple Tools and populate the menu with pages of static content.</li>
+                        <li>This simple plugin allows you to add a top tab in Disciple.Tools and populate the menu with pages of static content.</li>
                         <li>You can add iframe content (including reports, forms, other websites, and resources) and static HTML content. </li>
                     </ul>
                 </td>
