@@ -3,11 +3,11 @@
  * Plugin Name: Disciple.Tools - Static Section
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-static-section
  * Description: The Disciple.Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
- * Version:  1.2
+ * Version:  1.3
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
- * Tested up to: 5.6
+ * Tested up to: 5.8
  *
  * @package Disciple_Tools
  * @link    https://github.com/DiscipleTools
