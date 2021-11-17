@@ -1,4 +1,6 @@
 jQuery(document).ready(function() {
+    jQuery('#metrics-sidemenu').foundation('down', jQuery(`#ss-menu`));
+
     let ss_ids = dtStatic.nav_ids
 
     if( ! window.location.hash ) {
@@ -10,7 +12,7 @@ jQuery(document).ready(function() {
 function load_static_section_content( id ) {
     "use strict";
     let chartDiv = jQuery('#chart')
-    chartDiv.empty().append(`<img src="${dtStatic.plugin_uri}/spinner.svg" alt="" width="40px" />`)
+    chartDiv.empty().append(`<span class="loading-spinner active"></span>`)
 
     jQuery.ajax({
         type: 'POST',

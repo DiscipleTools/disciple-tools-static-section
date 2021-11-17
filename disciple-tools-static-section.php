@@ -63,8 +63,10 @@ class Static_Section {
 
     public $token = 'dt_static_section';
     public $title = 'Static Section';
-    public $permissions = 'manage_dt';
+    public $admin_permissions = 'manage_dt';
+    public $permissions = [ 'dt_access_contacts', 'view_project_metrics' ];
     public $github_url = 'https://github.com/DiscipleTools/disciple-tools-static-section';
+    public $base_slug = 'ss';
 
     /**  Singleton */
     private static $_instance = null;
@@ -87,25 +89,42 @@ class Static_Section {
 
         // admin area
         if ( is_admin() ) {
-
             add_action( "admin_menu", [ $this, "register_menu" ] );
             add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
         }
 
         // ss url
-        if ( isset( $_SERVER["SERVER_NAME"] ) ) {
-            $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
-            if ( isset( $_SERVER["REQUEST_URI"] ) ) {
-                $url .= sanitize_text_field( wp_unslash( $_SERVER["REQUEST_URI"] ) );
-            }
-        }
-        $url_path = trim( str_replace( get_site_url(), "", $url ), '/' );
-        if ( 'ss' === substr( $url_path, '0', 2 ) ) {
+        $url_path = dt_get_url_path( true );
+        $tab = get_option( 'dt_static_section_tab' );
+        // top
+        if ( $this->base_slug === substr( $url_path, '0', 2 ) && ( 'top' === $tab || '' === $tab ) ) {
             add_filter( 'dt_templates_for_urls', [ $this, 'add_url' ] ); // add custom URL
-            add_filter( 'dt_metrics_menu', [ $this, 'menu' ], 99 );
+            add_filter( 'dt_metrics_menu', [ $this, 'top_menu' ], 99 );
             add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
         }
+        // metrics
+        else if ( strpos( $url_path, 'metrics' ) === 0 && 'metrics' === $tab ) {
+            if ( !$this->has_permission() ){
+                return;
+            }
+            add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 50, 1 ); //load menu links
+            if ( 'metrics/' . $this->base_slug === substr( $url_path, '0', 10 ) ) {
+                add_filter( 'dt_templates_for_urls', [ $this, 'add_metrics_url' ] );
+                add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
+            }
+        }
     } // End __construct()
+
+    public function has_permission(){
+        $permissions = $this->permissions;
+        $pass = count( $permissions ) === 0;
+        foreach ( $this->permissions as $permission ){
+            if ( current_user_can( $permission ) ){
+                $pass = true;
+            }
+        }
+        return $pass;
+    }
 
     /**
      * Filters the array of row meta for each/specific plugin in the Plugins list table.
@@ -134,7 +153,7 @@ class Static_Section {
      * @since 0.1
      */
     public function register_menu() {
-        add_submenu_page( 'dt_extensions', $this->title, $this->title, $this->permissions, $this->token, [ $this, 'content' ] );
+        add_submenu_page( 'dt_extensions', $this->title, $this->title, $this->admin_permissions, $this->token, [ $this, 'content' ] );
     }
 
     /**
@@ -148,7 +167,7 @@ class Static_Section {
      */
     public function content() {
 
-        if ( !current_user_can( $this->permissions ) ) { // manage dt is a permission that is specific to Disciple.Tools and allows admins, strategists and dispatchers into the wp-admin
+        if ( !current_user_can( $this->admin_permissions ) ) { // manage dt is a permission that is specific to Disciple.Tools and allows admins, strategists and dispatchers into the wp-admin
             wp_die( 'You do not have sufficient permissions to access this page.' );
         }
 
@@ -313,8 +332,43 @@ class Static_Section {
     }
 
     public function right_column() {
+        $tab = $this->process_tab_postback();
         ?>
         <!-- Box -->
+        <form method="post">
+            <?php wp_nonce_field( 'section_tab'.get_current_user_id(), 'section_tab' ) ?>
+            <table class="widefat striped">
+                <thead>
+                <tr><th>Tab Location</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <select name="section-tab-value">
+                            <?php
+                            if ( 'metrics' === $tab ) {
+                                ?>
+                                <option value="metrics" selected>Metrics Nav</option>
+                                <?php
+                            } else {
+                                ?>
+                                <option value="top" selected>Top Nav</option>
+                                <?php
+                            }
+                            ?>
+                            <option disabled>-------</option>
+                            <option value="top">Top Nav</option>
+                            <option value="metrics">Metrics Nav</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><button class="button" type="submit">Update</button></td>
+                </tr>
+                </tbody>
+            </table>
+        </form>
+        <br>
         <table class="widefat striped">
             <thead>
             <tr><th>Instructions</th></tr>
@@ -324,7 +378,7 @@ class Static_Section {
                 <td>
                     <ul>
                         <li>This simple plugin allows you to add a top tab in Disciple.Tools and populate the menu with pages of static content.</li>
-                        <li>You can add iframe content (including reports, forms, other websites, and resources) and static HTML content. </li>
+                        <li>You can add iframe content (including reports, forms, other websites, and resources) and static HTML content.</li>
                     </ul>
                 </td>
             </tr>
@@ -333,6 +387,95 @@ class Static_Section {
         <br>
         <!-- End Box -->
         <?php
+    }
+
+    public function process_tab_postback() {
+        $tab = get_option( 'dt_static_section_tab' );
+        if ( empty( $tab ) ) {
+            update_option( 'dt_static_section_tab', 'top' );
+        }
+        if ( isset( $_POST['section_tab'] )
+            && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['section_tab'] ) ), 'section_tab'.get_current_user_id() )
+            && isset( $_POST['section-tab-value'] )
+        ) {
+            $section = sanitize_text_field( wp_unslash( $_POST['section-tab-value'] ) );
+            update_option( 'dt_static_section_tab', $section );
+            $tab = $section;
+        }
+        return $tab;
+    }
+
+    public function process_postback( $ss_post_id ) {
+        if ( isset( $_POST['static-section-nonce'] )
+            && isset( $_POST['_wp_http_referer'] )
+            && sanitize_text_field( wp_unslash( $_POST['_wp_http_referer'] ) ) === '/wp-admin/admin.php?page=dt_static_section'
+            && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['static-section-nonce'] ) ), 'static-section' . get_current_user_id() )
+        ) {
+            if ( ! $ss_post_id ) {
+                $ss_post_id = $this->get_ss_post_id();
+            }
+            $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
+
+            $current_title = $ss_post_meta['tab_title'] ?? '';
+            $new_title = '';
+            if ( isset( $_POST['tab_title'] ) && ! empty( $_POST['tab_title'] ) ){
+                $new_title = sanitize_text_field( wp_unslash( $_POST['tab_title'] ) ) ?? '';
+            }
+            if ( $new_title !== $current_title ) {
+                update_post_meta( $ss_post_id, 'tab_title', $new_title );
+            }
+            if ( isset( $_POST['clear_title'] ) ) {
+                update_post_meta( $ss_post_id, 'tab_title', false );
+            }
+
+            if ( isset( $_POST['new_nav'] ) ) /* process menu items */ {
+
+                // @phpcs:disable
+                $nav = array_map( function ( $a ) {
+                    $b = [];
+                    foreach ( $a as $key => $value ) {
+                        $b[$key] = $value; // @todo need sanitization
+                    }
+                    return $b;
+                }, $_POST['new_nav'] );
+                // @phpcs:enable
+
+                foreach ( $nav as $key => $item ) {
+                    if ( empty( $item['title'] ) && empty( $item['content'] ) ) {
+                        continue;
+                    }
+                    add_post_meta( $ss_post_id, 'nav_menu_title_'.$key, $item['title'], true );
+                    add_post_meta( $ss_post_id, 'nav_menu_content_'.$key, $item['content'], true );
+                }
+            }
+            if ( isset( $_POST['nav'] ) ) /* process menu items */ {
+
+                // @phpcs:disable
+                $nav = array_map( function ( $a ) {
+                    $b = [];
+                    foreach ( $a as $key => $value ) {
+                        $b[$key] = $value; // @todo need sanitization
+                    }
+                    return $b;
+                }, $_POST['nav'] );
+                // @phpcs:enable
+
+                foreach ( $nav as $key => $item ) {
+                    if ( empty( $item['title'] ) && empty( $item['content'] ) ) {
+                        continue;
+                    }
+                    update_post_meta( $ss_post_id, 'nav_menu_title_'.$key, $item['title'] );
+                    update_post_meta( $ss_post_id, 'nav_menu_content_'.$key, $item['content'] );
+                }
+            }
+            if ( isset( $_POST['delete'] ) ) /* process menu items */ {
+                $delete_id = sanitize_text_field( wp_unslash( $_POST['delete'] ) );
+
+                delete_post_meta( $ss_post_id, 'nav_menu_title_'.$delete_id );
+                delete_post_meta( $ss_post_id, 'nav_menu_content_'.$delete_id );
+            }
+        }
+        return $ss_post_id;
     }
 
     public function get_ss_post_id() {
@@ -422,79 +565,6 @@ class Static_Section {
         return $nav_meta;
     }
 
-    public function process_postback( $ss_post_id ) {
-        if ( isset( $_POST['static-section-nonce'] )
-            && isset( $_POST['_wp_http_referer'] )
-            && sanitize_text_field( wp_unslash( $_POST['_wp_http_referer'] ) ) === '/wp-admin/admin.php?page=dt_static_section'
-            && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['static-section-nonce'] ) ), 'static-section' . get_current_user_id() )
-        ) {
-            if ( ! $ss_post_id ) {
-                $ss_post_id = $this->get_ss_post_id();
-            }
-            $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
-
-            $current_title = $ss_post_meta['tab_title'] ?? '';
-            $new_title = '';
-            if ( isset( $_POST['tab_title'] ) && ! empty( $_POST['tab_title'] ) ){
-                $new_title = sanitize_text_field( wp_unslash( $_POST['tab_title'] ) ) ?? '';
-            }
-            if ( $new_title !== $current_title ) {
-                update_post_meta( $ss_post_id, 'tab_title', $new_title );
-            }
-            if ( isset( $_POST['clear_title'] ) ) {
-                update_post_meta( $ss_post_id, 'tab_title', false );
-            }
-
-            if ( isset( $_POST['new_nav'] ) ) /* process menu items */ {
-
-                // @phpcs:disable
-                $nav = array_map( function ( $a ) {
-                    $b = [];
-                    foreach ( $a as $key => $value ) {
-                        $b[$key] = $value; // @todo need sanitization
-                    }
-                    return $b;
-                }, $_POST['new_nav'] );
-                // @phpcs:enable
-
-                foreach ( $nav as $key => $item ) {
-                    if ( empty( $item['title'] ) && empty( $item['content'] ) ) {
-                        continue;
-                    }
-                    add_post_meta( $ss_post_id, 'nav_menu_title_'.$key, $item['title'], true );
-                    add_post_meta( $ss_post_id, 'nav_menu_content_'.$key, $item['content'], true );
-                }
-            }
-            if ( isset( $_POST['nav'] ) ) /* process menu items */ {
-
-                // @phpcs:disable
-                $nav = array_map( function ( $a ) {
-                    $b = [];
-                    foreach ( $a as $key => $value ) {
-                        $b[$key] = $value; // @todo need sanitization
-                    }
-                    return $b;
-                }, $_POST['nav'] );
-                // @phpcs:enable
-
-                foreach ( $nav as $key => $item ) {
-                    if ( empty( $item['title'] ) && empty( $item['content'] ) ) {
-                        continue;
-                    }
-                    update_post_meta( $ss_post_id, 'nav_menu_title_'.$key, $item['title'] );
-                    update_post_meta( $ss_post_id, 'nav_menu_content_'.$key, $item['content'] );
-                }
-            }
-            if ( isset( $_POST['delete'] ) ) /* process menu items */ {
-                $delete_id = sanitize_text_field( wp_unslash( $_POST['delete'] ) );
-
-                delete_post_meta( $ss_post_id, 'nav_menu_title_'.$delete_id );
-                delete_post_meta( $ss_post_id, 'nav_menu_content_'.$delete_id );
-            }
-        }
-        return $ss_post_id;
-    }
-
     public function register_static_section_post_type() {
         $args = array(
             'public'    => false
@@ -502,7 +572,7 @@ class Static_Section {
         register_post_type( $this->token, $args );
     }
 
-    public function menu( $content ) {
+    public function top_menu( $content ) {
         $nav_menu = $this->get_ss_nav_fields();
         if ( ! empty( $nav_menu ) ) {
             foreach ( $nav_menu as $key => $item ) {
@@ -513,28 +583,44 @@ class Static_Section {
         return $content;
     }
 
-    public function scripts() {
-        $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
+    public function metrics_menu( $content ) {
+        $pid = $this->get_ss_post_id();
+        $title = $this->get_ss_tab_title( $pid );
+        $nav_menu = $this->get_ss_nav_fields();
 
-        if ( 'ss' === substr( $url_path, '0', 2 ) ) {
-            wp_enqueue_script( 'dt_ss',
-                plugin_dir_url( __FILE__ ) . 'static.js',
-                [ 'jquery' ],
-                filemtime( plugin_dir_path( __FILE__ ). 'static.js' ),
-            true );
+        $content .= '
+            <li><a href="'. site_url( '/metrics/'. $this->base_slug .'/' ) .'">'.$title.'</a>
+                <ul class="menu vertical nested" id="' . $this->base_slug . '-menu">';
 
-            wp_localize_script(
-                'dt_ss',
-                'dtStatic',
-                [
-                    'root' => esc_url_raw( rest_url() ),
-                    'plugin_uri' => plugin_dir_url( __FILE__ ),
-                    'nonce' => wp_create_nonce( 'wp_rest' ),
-                    'current_user_id' => get_current_user_id(),
-                    'nav_ids' => $this->get_ss_nav_ids(),
-                ]
-            );
+        if ( ! empty( $nav_menu ) ) {
+            foreach ( $nav_menu as $key => $item ) {
+                $content .= '<li><a href="'. esc_url_raw( site_url( '/metrics/'. $this->base_slug . '/' ) ) . '#' . esc_attr( $key ) . '" onclick="load_static_section_content('. esc_attr( $key ).')">' .  esc_html( $item['title'] ) . '</a></li>';
+            }
         }
+
+        $content .= '</ul></li>';
+
+        return $content;
+    }
+
+    public function scripts() {
+        wp_enqueue_script( 'dt_ss',
+            plugin_dir_url( __FILE__ ) . 'static.js',
+            [ 'jquery' ],
+            filemtime( plugin_dir_path( __FILE__ ). 'static.js' ),
+        true );
+
+        wp_localize_script(
+            'dt_ss',
+            'dtStatic',
+            [
+                'root' => esc_url_raw( rest_url() ),
+                'plugin_uri' => plugin_dir_url( __FILE__ ),
+                'nonce' => wp_create_nonce( 'wp_rest' ),
+                'current_user_id' => get_current_user_id(),
+                'nav_ids' => $this->get_ss_nav_ids(),
+            ]
+        );
     }
 
     public function add_api_routes() {
@@ -561,23 +647,33 @@ class Static_Section {
     }
 
     public function add_url( $template_for_url ) {
-
         $template_for_url['ss'] = 'template-metrics.php';
         return $template_for_url;
     }
 
+    public function add_metrics_url( $template_for_url ) {
+        $template_for_url['metrics/ss'] = 'template-metrics.php';
+        return $template_for_url;
+    }
+
     public function top_nav() {
-        ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php echo esc_html( $this->get_ss_tab_title() ); ?></a></li><?php
+        $tab = get_option( 'dt_static_section_tab' );
+        if ( 'top' === $tab || '' === $tab ) {
+            ?><li><a href="<?php echo esc_url( site_url( '/ss/' ) ); ?>"><?php echo esc_html( $this->get_ss_tab_title() ); ?></a></li><?php
+        }
     }
 
     public function desktop_navbar_menu_options( $tabs ) {
-        $tabs['ss'] = [
-            "link" => esc_url( site_url( '/ss/' ) ),
-            "label" => esc_html( $this->get_ss_tab_title() ),
-            'icon' => '',
-            'hidden' => false,
-            'submenu' => []
-        ];
+        $tab = get_option( 'dt_static_section_tab' );
+        if ( 'top' === $tab || '' === $tab ) {
+            $tabs['ss'] = [
+                "link" => esc_url( site_url( '/ss/' ) ),
+                "label" => esc_html( $this->get_ss_tab_title() ),
+                'icon' => '',
+                'hidden' => false,
+                'submenu' => []
+            ];
+        }
         return $tabs;
     }
 
@@ -588,7 +684,9 @@ class Static_Section {
      * @access public
      * @return void
      */
-    public static function activation() {}
+    public static function activation() {
+        update_option( 'dt_static_section_tab', 'top' );
+    }
 
     /**
      * Method that runs only when the plugin is deactivated.
@@ -597,7 +695,9 @@ class Static_Section {
      * @access public
      * @return void
      */
-    public static function deactivation() {}
+    public static function deactivation() {
+        delete_option( 'dt_static_section_tab' );
+    }
 
     /**
      * Magic method to output a string if trying to use the object as a string.
