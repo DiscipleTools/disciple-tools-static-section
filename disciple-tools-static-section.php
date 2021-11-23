@@ -97,19 +97,20 @@ class Static_Section {
         // ss url
         $url_path = dt_get_url_path( true );
         $tab = get_option( 'dt_static_section_tab' );
+
         // top
-        if ( $this->base_slug === substr( $url_path, '0', 2 ) && ( 'top' === $tab || '' === $tab ) ) {
+        if ( $this->base_slug === substr( $url_path, 0, 2 ) && ( 'top' === $tab || '' === $tab ) ) {
             add_filter( 'dt_templates_for_urls', [ $this, 'add_url' ] ); // add custom URL
             add_filter( 'dt_metrics_menu', [ $this, 'top_menu' ], 99 );
             add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
         }
         // metrics
-        else if ( strpos( $url_path, 'metrics' ) === 0 && 'metrics' === $tab ) {
+        else if ( 'metrics' === substr( $url_path, 0, 7 ) && 'metrics' === $tab ) {
             if ( !$this->has_permission() ){
                 return;
             }
             add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 50, 1 ); //load menu links
-            if ( 'metrics/' . $this->base_slug === substr( $url_path, '0', 10 ) ) {
+            if ( 'metrics/' . $this->base_slug === substr( $url_path, 0, 10 ) ) {
                 add_filter( 'dt_templates_for_urls', [ $this, 'add_metrics_url' ] );
                 add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
             }
