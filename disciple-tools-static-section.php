@@ -3,6 +3,8 @@
  * Plugin Name: Disciple.Tools - Static Section
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-static-section
  * Description: The Disciple.Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
+ * Text Domain: static-section
+ * Domain Path: /languages
  * Version:  1.6
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
@@ -115,6 +117,9 @@ class Static_Section {
                 add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
             }
         }
+
+        $this->i18n();
+
     } // End __construct()
 
     public function has_permission(){
@@ -699,6 +704,18 @@ class Static_Section {
      */
     public static function deactivation() {
         delete_option( 'dt_static_section_tab' );
+    }
+
+    /**
+     * Loads the translation files.
+     *
+     * @since  0.1
+     * @access public
+     * @return void
+     */
+    public function i18n() {
+        $domain = 'static-section';
+        load_plugin_textdomain( $domain, false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
     }
 
     /**
