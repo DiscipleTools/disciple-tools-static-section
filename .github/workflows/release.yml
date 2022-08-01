@@ -23,7 +23,7 @@ jobs:
       - name: Build project
         run: |
           mkdir disciple-tools-static-section
-          cp -r disciple-tools-static-section.php admin spinner.svg version-control.json LICENSE SECURITY.md disciple-tools-static-section/
+          cp -r disciple-tools-static-section.php admin spinner.svg version-control.json static.js LICENSE SECURITY.md disciple-tools-static-section/
           zip -r disciple-tools-static-section.zip disciple-tools-static-section
       - name: Create Release
         id: create_release
