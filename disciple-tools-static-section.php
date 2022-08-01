@@ -578,7 +578,7 @@ class Static_Section {
         $nav_menu = $this->get_ss_nav_fields();
         if ( ! empty( $nav_menu ) ) {
             foreach ( $nav_menu as $key => $item ) {
-                $content .= '<li class="'. esc_attr( $key) .'"><a href="'. esc_url_raw( site_url( '/ss/' ) ) . '#' . esc_attr( $key ) . '" onclick="load_static_section_content('. esc_attr( $key ).')">' .  esc_html( $item['title'] ) . '</a></li>';
+                $content .= '<li class="'. esc_attr( $key ) .'"><a href="'. esc_url_raw( site_url( '/ss/' ) ) . '#' . esc_attr( $key ) . '" onclick="load_static_section_content('. esc_attr( $key ).')">' .  esc_html( $item['title'] ) . '</a></li>';
             }
         }
 
@@ -596,7 +596,7 @@ class Static_Section {
 
         if ( ! empty( $nav_menu ) ) {
             foreach ( $nav_menu as $key => $item ) {
-                $content .= '<li class="'. esc_attr( $key) .'"><a href="'. esc_url_raw( site_url( '/metrics/'. $this->base_slug . '/' ) ) . '#' . esc_attr( $key ) . '" onclick="load_static_section_content('. esc_attr( $key ).')">' .  esc_html( $item['title'] ) . '</a></li>';
+                $content .= '<li class="'. esc_attr( $key ) .'"><a href="'. esc_url_raw( site_url( '/metrics/'. $this->base_slug . '/' ) ) . '#' . esc_attr( $key ) . '" onclick="load_static_section_content('. esc_attr( $key ).')">' .  esc_html( $item['title'] ) . '</a></li>';
             }
         }
 
