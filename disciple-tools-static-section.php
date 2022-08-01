@@ -3,7 +3,7 @@
  * Plugin Name: Disciple.Tools - Static Section
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-static-section
  * Description: The Disciple.Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
- * Version:  1.5
+ * Version:  1.6
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
@@ -781,7 +781,7 @@ add_action( 'plugins_loaded', function (){
             Puc_v4_Factory::buildUpdateChecker(
                 $hosted_json,
                 __FILE__,
-                'disciple-tools-static-section'
+                'static-section'
             );
         }
     }
