@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-static-section.svg?branch=master)
-
 ![Plugin Banner](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/documentation/static-section-banner.png)
 # Disciple.Tools - Static Section
 
