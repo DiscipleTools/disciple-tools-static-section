@@ -1,6 +1,5 @@
 language: php
-php:
-  - '7.4'
+
 dist: bionic
 sudo: required # this seems to be required for some reason to get MySQL to work
 services:
@@ -8,6 +7,11 @@ services:
 cache:
   directories:
     - $HOME/.composer/cache/files
+matrix:
+  include:
+    - php: 8.0
+    - php: 7.4
+      env: WP_VERSION=latest
 before_install:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS testdb'
   - mysql -e "GRANT ALL ON testdb.* TO 'travis'@'localhost'"
