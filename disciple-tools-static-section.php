@@ -3,7 +3,7 @@
  * Plugin Name: Disciple.Tools - Static Section
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-static-section
  * Description: The Disciple.Tools - Static Section adds a top tab a section to add metrics, resources, or any other HTML content.
- * Version:  1.7
+ * Version:  1.8
  * Author URI: https://github.com/DiscipleTools
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
@@ -16,6 +16,7 @@
  *
  * @version 1.1 Adapted to the new menu structure
  * @version 1.4 Added metrics tab option
+ * @version 1.8 Fix to multisite subdomain save
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
@@ -410,14 +411,14 @@ class Static_Section {
 
     public function process_postback( $ss_post_id ) {
         if ( isset( $_POST['static-section-nonce'] )
-            && isset( $_POST['_wp_http_referer'] )
-            && sanitize_text_field( wp_unslash( $_POST['_wp_http_referer'] ) ) === '/wp-admin/admin.php?page=dt_static_section'
             && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['static-section-nonce'] ) ), 'static-section' . get_current_user_id() )
         ) {
             if ( ! $ss_post_id ) {
                 $ss_post_id = $this->get_ss_post_id();
             }
             $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
+
+            dt_write_log($_POST);
 
             $current_title = $ss_post_meta['tab_title'] ?? '';
             $new_title = '';

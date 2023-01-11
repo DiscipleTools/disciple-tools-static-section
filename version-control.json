@@ -1,7 +1,7 @@
 {
   "name": "Disciple.Tools - Static Section",
-  "version": "1.7",
-  "last_updated": "2021-12",
+  "version": "1.8",
+  "last_updated": "2023-01",
   "author": "Disciple.Tools",
   "author_homepage": "https://disciple.tools",
   "git_owner": "DiscipleTools",
@@ -15,7 +15,7 @@
   "license_url": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/LICENSE",
   "readme_url": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/README.md",
   "requires": "4.7",
-  "tested": "5.8",
+  "tested": "6.2",
   "upgrade_notice": "Here's why you should upgrade...",
   "banners": {
     "low": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/documentation/static-section-banner.png",
