@@ -28,8 +28,8 @@ add_action( 'after_setup_theme', function (){
     /*
      * Check if the Disciple.Tools theme is loaded and is the latest required version
      */
-    $is_theme_dt = class_exists( "Disciple_Tools" );
-    if ( !$is_theme_dt || version_compare( $version, $required_dt_theme_version, "<" ) ) {
+    $is_theme_dt = class_exists( 'Disciple_Tools' );
+    if ( !$is_theme_dt || version_compare( $version, $required_dt_theme_version, '<' ) ) {
         if ( ! is_multisite() ) {
             add_action('admin_notices', function () {
                 ?>
@@ -91,7 +91,7 @@ class Static_Section {
 
         // admin area
         if ( is_admin() ) {
-            add_action( "admin_menu", [ $this, "register_menu" ] );
+            add_action( 'admin_menu', [ $this, 'register_menu' ] );
             add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
         }
 
@@ -418,7 +418,7 @@ class Static_Section {
             }
             $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
 
-            dt_write_log($_POST);
+            dt_write_log( $_POST );
 
             $current_title = $ss_post_meta['tab_title'] ?? '';
             $new_title = '';
@@ -644,7 +644,7 @@ class Static_Section {
     public function content_endpoint( WP_REST_Request $request ) {
         $params = $request->get_json_params();
         if ( ! isset( $params['id'] ) ) {
-            return new WP_Error( __METHOD__, "Missing Parameters", [ 'status' => 403 ] );
+            return new WP_Error( __METHOD__, 'Missing Parameters', [ 'status' => 403 ] );
         }
 
         return $this->get_ss_content( $params['id'] );
@@ -671,8 +671,8 @@ class Static_Section {
         $tab = get_option( 'dt_static_section_tab' );
         if ( 'top' === $tab || '' === $tab ) {
             $tabs['ss'] = [
-                "link" => esc_url( site_url( '/ss/' ) ),
-                "label" => esc_html( $this->get_ss_tab_title() ),
+                'link' => esc_url( site_url( '/ss/' ) ),
+                'label' => esc_html( $this->get_ss_tab_title() ),
                 'icon' => '',
                 'hidden' => false,
                 'submenu' => []
@@ -769,17 +769,17 @@ register_deactivation_hook( __FILE__, [ 'Static_Section', 'deactivation' ] );
  * @see https://github.com/DiscipleTools/disciple-tools-version-control/wiki/How-to-Update-the-Starter-Plugin
  */
 add_action( 'plugins_loaded', function (){
-    if ( is_admin() && !( is_multisite() && class_exists( "DT_Multisite" ) ) || wp_doing_cron() ){
+    if ( is_admin() && !( is_multisite() && class_exists( 'DT_Multisite' ) ) || wp_doing_cron() ){
         if ( ! class_exists( 'Puc_v4_Factory' ) ) {
             // find the Disciple.Tools theme and load the plugin update checker.
             foreach ( wp_get_themes() as $theme ){
-                if ( $theme->get( 'TextDomain' ) === "disciple_tools" && file_exists( $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' ) ){
+                if ( $theme->get( 'TextDomain' ) === 'disciple_tools' && file_exists( $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' ) ){
                     require( $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
                 }
             }
         }
         if ( class_exists( 'Puc_v4_Factory' ) ){
-            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/version-control.json";
+            $hosted_json = 'https://raw.githubusercontent.com/DiscipleTools/disciple-tools-static-section/master/version-control.json';
             Puc_v4_Factory::buildUpdateChecker(
                 $hosted_json,
                 __FILE__,
