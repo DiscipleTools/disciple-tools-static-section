@@ -66,7 +66,7 @@ class Static_Section {
     public $token = 'dt_static_section';
     public $title = 'Static Section';
     public $admin_permissions = 'manage_dt';
-    public $permissions = array( 'dt_access_contacts', 'view_project_metrics' );
+    public $permissions = [ 'dt_access_contacts', 'view_project_metrics' ];
     public $github_url = 'https://github.com/DiscipleTools/disciple-tools-static-section';
     public $base_slug = 'ss';
 
@@ -84,16 +84,16 @@ class Static_Section {
      * @since   0.1.0
      */
     public function __construct() {
-        add_action( 'init', array( $this, 'register_static_section_post_type' ) );
-        add_action( 'rest_api_init', array( $this, 'add_api_routes' ) );
+        add_action( 'init', [ $this, 'register_static_section_post_type' ] );
+        add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
 
-        add_filter( 'desktop_navbar_menu_options', array( $this, 'desktop_navbar_menu_options' ), 50 );
+        add_filter( 'desktop_navbar_menu_options', [ $this, 'desktop_navbar_menu_options' ], 50 );
 
         // admin area
         if ( is_admin() ) {
-            add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
-            add_action( 'admin_menu', array( $this, 'register_menu' ) );
-            add_filter( 'plugin_row_meta', array( $this, 'plugin_description_links' ), 10, 4 );
+            add_action( 'admin_enqueue_scripts', [ $this, 'admin_scripts' ] );
+            add_action( 'admin_menu', [ $this, 'register_menu' ] );
+            add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
         }
 
         // ss url
@@ -102,19 +102,19 @@ class Static_Section {
 
         // top
         if ( $this->base_slug === substr( $url_path, 0, 2 ) && ( 'top' === $tab || '' === $tab ) ) {
-            add_filter( 'dt_templates_for_urls', array( $this, 'add_url' ) ); // add custom URL
-            add_filter( 'dt_metrics_menu', array( $this, 'top_menu' ), 99 );
-            add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ), 99 );
+            add_filter( 'dt_templates_for_urls', [ $this, 'add_url' ] ); // add custom URL
+            add_filter( 'dt_metrics_menu', [ $this, 'top_menu' ], 99 );
+            add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
         }
         // metrics
         else if ( 'metrics' === substr( $url_path, 0, 7 ) && 'metrics' === $tab ) {
             if ( !$this->has_permission() ){
                 return;
             }
-            add_filter( 'dt_metrics_menu', array( $this, 'metrics_menu' ), 50, 1 ); //load menu links
+            add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 50, 1 ); //load menu links
             if ( 'metrics/' . $this->base_slug === substr( $url_path, 0, 10 ) ) {
-                add_filter( 'dt_templates_for_urls', array( $this, 'add_metrics_url' ) );
-                add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ), 99 );
+                add_filter( 'dt_templates_for_urls', [ $this, 'add_metrics_url' ] );
+                add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
             }
         }
     } // End __construct()
@@ -157,7 +157,7 @@ class Static_Section {
      * @since 0.1
      */
     public function register_menu() {
-        add_submenu_page( 'dt_extensions', $this->title, $this->title, $this->admin_permissions, $this->token, array( $this, 'content' ) );
+        add_submenu_page( 'dt_extensions', $this->title, $this->title, $this->admin_permissions, $this->token, [ $this, 'content' ] );
     }
 
     /**
@@ -278,10 +278,10 @@ class Static_Section {
                                     <tr>
                                         <td>
                                             Page Content<br>
-                                            <?php wp_editor( $nav['content'], "nav-$key", array(
+                                            <?php wp_editor( $nav['content'], "nav-$key", [
                                                 'textarea_name' => "nav[$key][content]",
                                                 'media_buttons' => false,
-                                            ) ); ?>
+                                            ] ); ?>
                                         </td>
                                     </tr>
                                     <tr style="text-align:right;">
@@ -509,16 +509,16 @@ class Static_Section {
         global $wpdb;
         $ss_post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_type = %s AND post_title = %s", $this->token, $this->token ) );
         if ( ! $ss_post_id ) {
-            $ss_post_id = wp_insert_post(array(
+            $ss_post_id = wp_insert_post([
                 'post_title' => $this->token,
                 'post_type' => $this->token,
                 'post_status' => $this->token,
                 'comment_status' => 'closed',
                 'ping_status' => 'closed',
-                'meta_input' => array(
+                'meta_input' => [
                     'tab_title' => '',
-                ),
-            ));
+                ],
+            ]);
         }
         return $ss_post_id;
     }
@@ -535,7 +535,7 @@ class Static_Section {
             $ss_post_id = $this->get_ss_post_id();
         }
         $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
-        $nav_meta = array();
+        $nav_meta = [];
 
         foreach ( $ss_post_meta as $key => $item ) {
             if ( substr( $key, 0, 15 ) === 'nav_menu_title_' ) {
@@ -576,7 +576,7 @@ class Static_Section {
             $ss_post_id = $this->get_ss_post_id();
         }
         $ss_post_meta = $this->get_ss_post_meta( $ss_post_id );
-        $nav_meta = array();
+        $nav_meta = [];
 
         foreach ( $ss_post_meta as $key => $item ) {
             if ( substr( $key, 0, 15 ) === 'nav_menu_title_' ) {
@@ -593,9 +593,9 @@ class Static_Section {
     }
 
     public function register_static_section_post_type() {
-        $args = array(
+        $args = [
             'public'    => false,
-        );
+        ];
         register_post_type( $this->token, $args );
     }
 
@@ -633,20 +633,20 @@ class Static_Section {
     public function scripts() {
         wp_enqueue_script( 'dt_ss',
             plugin_dir_url( __FILE__ ) . 'static.js',
-            array( 'jquery' ),
+            [ 'jquery' ],
             filemtime( plugin_dir_path( __FILE__ ). 'static.js' ),
         true );
 
         wp_localize_script(
             'dt_ss',
             'dtStatic',
-            array(
+            [
                 'root' => esc_url_raw( rest_url() ),
                 'plugin_uri' => plugin_dir_url( __FILE__ ),
                 'nonce' => wp_create_nonce( 'wp_rest' ),
                 'current_user_id' => get_current_user_id(),
                 'nav_ids' => $this->get_ss_nav_ids(),
-            )
+            ]
         );
     }
 
@@ -654,20 +654,20 @@ class Static_Section {
         $namespace = 'static-section/v1';
 
         register_rest_route(
-            $namespace, '/content', array(
-                array(
+            $namespace, '/content', [
+                [
                     'methods'  => WP_REST_Server::CREATABLE,
-                    'callback' => array( $this, 'content_endpoint' ),
+                    'callback' => [ $this, 'content_endpoint' ],
                     'permission_callback' => '__return_true',
-                ),
-            )
+                ],
+            ]
         );
     }
 
     public function content_endpoint( WP_REST_Request $request ) {
         $params = $request->get_json_params();
         if ( ! isset( $params['id'] ) ) {
-            return new WP_Error( __METHOD__, 'Missing Parameters', array( 'status' => 403 ) );
+            return new WP_Error( __METHOD__, 'Missing Parameters', [ 'status' => 403 ] );
         }
 
         return $this->get_ss_content( $params['id'] );
@@ -693,13 +693,13 @@ class Static_Section {
     public function desktop_navbar_menu_options( $tabs ) {
         $tab = get_option( 'dt_static_section_tab' );
         if ( 'top' === $tab || '' === $tab ) {
-            $tabs['ss'] = array(
+            $tabs['ss'] = [
                 'link' => esc_url( site_url( '/ss/' ) ),
                 'label' => esc_html( $this->get_ss_tab_title() ),
                 'icon' => '',
                 'hidden' => false,
-                'submenu' => array(),
-            );
+                'submenu' => [],
+            ];
         }
         return $tabs;
     }
@@ -769,7 +769,7 @@ class Static_Section {
      * @since  0.1
      * @access public
      */
-    public function __call( $method = '', $args = array() ) {
+    public function __call( $method = '', $args = [] ) {
         // @codingStandardsIgnoreLine
         _doing_it_wrong( __FUNCTION__, esc_html('Whoah, partner!'), '0.1' );
         unset( $method, $args );
@@ -778,8 +778,8 @@ class Static_Section {
 }
 
 // Register activation hook.
-register_activation_hook( __FILE__, array( 'Static_Section', 'activation' ) );
-register_deactivation_hook( __FILE__, array( 'Static_Section', 'deactivation' ) );
+register_activation_hook( __FILE__, [ 'Static_Section', 'activation' ] );
+register_deactivation_hook( __FILE__, [ 'Static_Section', 'deactivation' ] );
 
 
 /**
