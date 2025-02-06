@@ -21,7 +21,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
 
-add_action( 'after_setup_theme', function (){
+add_action( 'after_setup_theme', function () {
     $required_dt_theme_version = '1.0.4';
     $wp_theme = wp_get_theme();
     $version = $wp_theme->version;
@@ -91,6 +91,7 @@ class Static_Section {
 
         // admin area
         if ( is_admin() ) {
+            add_action( 'admin_enqueue_scripts', [ $this, 'admin_scripts' ] );
             add_action( 'admin_menu', [ $this, 'register_menu' ] );
             add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
         }
@@ -116,7 +117,6 @@ class Static_Section {
                 add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
             }
         }
-
     } // End __construct()
 
     public function has_permission(){
@@ -165,6 +165,13 @@ class Static_Section {
      */
     public function extensions_menu() {}
 
+    public function admin_scripts( $hook ) {
+        if ( $hook !== 'extensions-d-t_page_dt_static_section' ) {
+            return;
+        }
+
+        wp_enqueue_editor();
+    }
     /**
      * Builds page contents
      * @since 0.1
@@ -271,7 +278,10 @@ class Static_Section {
                                     <tr>
                                         <td>
                                             Page Content<br>
-                                            <textarea name="nav[<?php echo esc_attr( $key ) ?>][content]" style="width:100%; height:100px;"><?php echo $nav['content']; // @phpcs:ignore ?></textarea>
+                                            <?php wp_editor( $nav['content'], "nav-$key", [
+                                                'textarea_name' => "nav[$key][content]",
+                                                'media_buttons' => false,
+                                            ] ); ?>
                                         </td>
                                     </tr>
                                     <tr style="text-align:right;">
@@ -306,7 +316,8 @@ class Static_Section {
                 let d = new Date();
                 let id = d.getMilliseconds() + Math.round((d).getTime() / 1000);
 
-                jQuery('#menu-box-wrapper').append(`
+                document.getElementById('menu-box-wrapper').insertAdjacentHTML('beforeend',
+                    `
                     <table class="widefat striped" id="${id}">
                         <tbody>
                         <tr>
@@ -318,7 +329,7 @@ class Static_Section {
                         <tr>
                             <td>
                                 Page Content<br>
-                                <textarea name="new_nav[${id}][content]" style="width:100%; height:100px;"></textarea>
+                                <textarea id="content-${id}" name="new_nav[${id}][content]" style="width:100%; height:100px;"></textarea>
                             </td>
                         </tr>
                         <tr style="text-align:right;">
@@ -329,8 +340,19 @@ class Static_Section {
                         </tbody>
                     </table>
                     <br>
-                `)
+                `);
+
+                wp.editor.initialize(`content-${id}`,
+                    {
+                        mediaButtons: false,
+                        tinymce: {
+                            toolbar1: 'formatselect,bold,italic,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,wp_more,spellchecker,fullscreen,wp_adv,code_snippets',
+                            toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap,outdent,indent,undo,redo,wp_help',
+                        },
+                        quicktags: true,
+                    });
             }
+
         </script>
         <?php
     }
@@ -494,8 +516,8 @@ class Static_Section {
                 'comment_status' => 'closed',
                 'ping_status' => 'closed',
                 'meta_input' => [
-                    'tab_title' => ''
-                ]
+                    'tab_title' => '',
+                ],
             ]);
         }
         return $ss_post_id;
@@ -534,7 +556,8 @@ class Static_Section {
             $ss_post_id = $this->get_ss_post_id();
         }
 
-        $ss_post_meta = array_map( function ( $a ) { return maybe_unserialize( $a[0] );
+        $ss_post_meta = array_map( function ( $a ) {
+            return maybe_unserialize( $a[0] );
         }, get_post_meta( $ss_post_id ) );
 
         if ( ! isset( $ss_post_meta['tab_title'] ) ) {
@@ -570,9 +593,9 @@ class Static_Section {
     }
 
     public function register_static_section_post_type() {
-        $args = array(
-            'public'    => false
-        );
+        $args = [
+            'public'    => false,
+        ];
         register_post_type( $this->token, $args );
     }
 
@@ -675,7 +698,7 @@ class Static_Section {
                 'label' => esc_html( $this->get_ss_tab_title() ),
                 'icon' => '',
                 'hidden' => false,
-                'submenu' => []
+                'submenu' => [],
             ];
         }
         return $tabs;
@@ -746,7 +769,7 @@ class Static_Section {
      * @since  0.1
      * @access public
      */
-    public function __call( $method = '', $args = array() ) {
+    public function __call( $method = '', $args = [] ) {
         // @codingStandardsIgnoreLine
         _doing_it_wrong( __FUNCTION__, esc_html('Whoah, partner!'), '0.1' );
         unset( $method, $args );
@@ -768,13 +791,13 @@ register_deactivation_hook( __FILE__, [ 'Static_Section', 'deactivation' ] );
  * Also, see the instructions for version updating to understand the steps involved.
  * @see https://github.com/DiscipleTools/disciple-tools-version-control/wiki/How-to-Update-the-Starter-Plugin
  */
-add_action( 'plugins_loaded', function (){
-    if ( is_admin() && !( is_multisite() && class_exists( 'DT_Multisite' ) ) || wp_doing_cron() ){
+add_action( 'plugins_loaded', function () {
+    if ( is_admin() && ( !( is_multisite() && class_exists( 'DT_Multisite' ) ) || wp_doing_cron() ) ){
         if ( ! class_exists( 'Puc_v4_Factory' ) ) {
             // find the Disciple.Tools theme and load the plugin update checker.
             foreach ( wp_get_themes() as $theme ){
                 if ( $theme->get( 'TextDomain' ) === 'disciple_tools' && file_exists( $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' ) ){
-                    require( $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
+                    require $theme->get_stylesheet_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php';
                 }
             }
         }
